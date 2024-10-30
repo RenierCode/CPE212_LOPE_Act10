@@ -1,0 +1,49 @@
+---
+- name: install java (Ubuntu)
+  apt:
+    name: openjdk-11-jdk
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+
+- name: install jave (CentOS)
+  dnf:
+    name: jave-11-openjdk
+    state: latest
+  when: ansible_distribution == "CentOS"
+
+- name: Import Elastic public signing key (Ubuntu)
+  shell: wget -q0 - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add - 
+
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: latest
+
+- name: Add Elastic repo into source list
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/6.x/apt stable main
+    state: present
+
+- name: Install elasticsearch from APT repository
+  apt:
+    name: elasticsearch
+    state: latest
+ 
+
+- name: Copy config
+  copy:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    content:
+      path.data: /var/lib/elasticsearch
+      path.logs: /var/log/elasticsearch
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Enable elasticsearch.service
+  systemd:
+    name: elasticsearch.service
+    enabled: yes
+    state: restarted
+  become: true
