@@ -1,0 +1,49 @@
+---
+- name: Configure Logstash
+  blockinfile:
+    path: /etc/logstash/conf.d/logstash.conf
+    block: |
+      # Logstash Configuration
+
+      input {
+        beats {
+          port => 5044
+          host => "127.0.0.1"
+         }
+      }
+
+      filter {
+      # nginx access log
+        if [source] =~ /\/(access)\d{0,10}\.(log)/ {
+          grok {
+            match => {"message" => "%{COMBINEDAPACHELOG}"}
+            add_tag => ["nginx_access_log"]
+          }
+          mutate {
+            rename => {"timestamp" => "log_timestamp"}
+          }
+        }
+      }
+
+      output {
+        elasticsearch { hosts => ["localhost:9200"] }
+        stdout { codec => rubydebug }
+      }
+    state: present
+    create: yes
+
+- name: Install Logstash
+  package:
+    name:
+      - logstash
+    state: latest
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Enable Logstash Service
+  service:
+     name: logstash
+     enabled: yes
+     state: started

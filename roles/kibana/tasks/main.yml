@@ -1,0 +1,31 @@
+---
+- name: Configure Kibana
+  blockinfile:
+    path: /etc/kibana/kibana.yml
+    block: |
+      # Kibana Configuration
+
+      server.port: 5601
+      server.host: "localhost"
+      server.name: "Lope-Act10"
+      elasticsearch.hosts: ["http://localhost:9200"]
+      kibana.index: ".kibana"
+      elasticsearch.requestTimeout: 180000
+    state: present
+    create: yes
+
+- name: Install Kibana
+  package:
+    name:
+      - kibana
+    state: latest
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Enable Kibana Service
+  service:
+     name: kibana
+     enabled: yes
+     state: started

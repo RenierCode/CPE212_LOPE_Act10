@@ -22,20 +22,11 @@
   roles:
     -  base
 
-- hosts: web_servers
+- hosts: db_servers:web_servers
   become: true
   roles:
-    - installs
-
-#- hosts: db_servers:web_servers
-#  become: true
-#  roles:
-#    - config_elasticsearch
-#    - config_kibana
-#    - config_logstash
-
-#- hosts: db_servers:web_servers
-#  become: true
-#  roles:
-#    - starts
+    - requirements
+    - elasticSearch
+    - kibana
+    - logstash
 

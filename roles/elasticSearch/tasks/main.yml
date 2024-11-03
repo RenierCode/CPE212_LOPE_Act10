@@ -1,0 +1,33 @@
+---
+- name: Configure ElasticSearch
+  blockinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    block: |
+      # ElasticSearch Configuration
+
+      cluster.name: my-cluster
+      node.name: dev-node-1
+      network.host: 0.0.0.0
+      http.port: 9200
+      discovery.type: single-node
+      path.data: /var/lib/elasticsearch
+      path.logs: /var/log/elasticsearch
+      bootstrap.memory_lock: true
+    state: present
+    create: yes
+
+- name: Install ElasticSearch
+  package:
+    name:
+      - elasticsearch
+    state: latest
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Enable ElasticSearch Service
+  service:
+     name: elasticsearch
+     enabled: yes
+     state: started
